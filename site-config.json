@@ -1,0 +1,14 @@
+{
+  "siteApproved": false,
+  "termsApproved": false,
+  "formEndpoint": "",
+  "packages": [
+    {"name":"Standard","price":600,"description":"A clear, welcoming home for your business online.","features":["Up to 4 core pages","Responsive design for phones, tablets & desktops","Setup of your supplied text and images","One straightforward inquiry form","Basic on-page SEO setup","Two consolidated revision rounds","Launch assistance"]},
+    {"name":"Premier","price":1200,"description":"More room to tell your story and connect your services.","features":["Up to 8 core pages with more extensive layouts","Responsive design for phones, tablets & desktops","Content organization & light editing of your copy","One straightforward inquiry form","One standard booking or registration embed/link¹","Basic on-page SEO setup","Three consolidated revision rounds","Launch assistance & a handoff walkthrough"]}
+  ],
+  "standardPayment": "50% upfront and 50% before launch.",
+  "largerPayment": "For larger projects: 40% upfront, 30% at design approval, and 30% before launch.",
+  "smallUpdatePrice": "$10–$20",
+  "largerUpdatePrice": "$30–$40",
+  "defectDays": 14
+}
