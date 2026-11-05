@@ -1,6 +1,7 @@
 """Dependency-free static build. Draft terms only appear in the local review output."""
 import argparse
 import html
+import hashlib
 import json
 import shutil
 from pathlib import Path
@@ -8,6 +9,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG = json.loads((ROOT / 'site-config.json').read_text())
 TEMPLATE = (ROOT / 'templates/index.html').read_text()
+
+
+def runtime_config():
+    return 'window.KKSOLVE_CONFIG = ' + json.dumps({key: CONFIG.get(key) for key in ['formEndpoint', 'formProvider', 'estimatePricing']}) + ';\n'
+
+
+def asset_version(content):
+    return hashlib.sha256(content.encode()).hexdigest()[:12]
 
 
 def esc(value):
@@ -52,6 +61,8 @@ def render(review=False):
         raise ValueError('Use an HTTPS public submission endpoint, never a private API key.')
     values = {
         'ROBOTS': 'noindex, nofollow' if review else 'index, follow',
+        'CONFIG_VERSION': asset_version(runtime_config()),
+        'SCRIPT_VERSION': asset_version((ROOT / 'script.js').read_text()),
         'REVIEW_BANNER': '<aside class="review-banner">Private review preview · Package prices, payment & support terms are proposals.<a href="#services">Review the details ↓</a></aside>' if review else '',
         'PACKAGES': packages, 'PAYMENT': payment, 'SUPPORT': support,
         'COST_FAQ': cost, 'DEFECT_FAQ': defect,
@@ -72,7 +83,7 @@ def build_folder(folder, review):
     for filename in ['style.css', 'script.js', 'tinos.html']:
         shutil.copy2(ROOT / filename, folder / filename)
     shutil.copytree(ROOT / 'assets', folder / 'assets', dirs_exist_ok=True)
-    runtime = 'window.KKSOLVE_CONFIG = ' + json.dumps({key: CONFIG.get(key) for key in ['formEndpoint', 'formProvider', 'estimatePricing']}) + ';\n'
+    runtime = runtime_config()
     (folder / 'runtime-config.js').write_text(runtime)
     (folder / 'robots.txt').write_text('User-agent: *\nDisallow: /\n' if review else 'User-agent: *\nAllow: /\nSitemap: https://kksolve.com/sitemap.xml\n')
     if not review:
