@@ -66,7 +66,7 @@ with sync_playwright() as p:
     print('PASS no console errors during ordinary browsing')
     errors.clear()
     # Inject only a local mock endpoint; no provider is contacted.
-    page.route('**/runtime-config.js', lambda route: route.fulfill(content_type='application/javascript', body='window.KKSOLVE_CONFIG = ' + json.dumps({**json.loads((ROOT / 'site-config.json').read_text()), 'formEndpoint': MOCK}) + ';'))
+    page.route('**/runtime-config.js*', lambda route: route.fulfill(content_type='application/javascript', body='window.KKSOLVE_CONFIG = ' + json.dumps({**json.loads((ROOT / 'site-config.json').read_text()), 'formEndpoint': MOCK}) + ';'))
     requests = []
     reply = {'status': 200, 'json': {'success': 'true'}}
     def submit(route):

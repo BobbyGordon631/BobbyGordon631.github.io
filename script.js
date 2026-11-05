@@ -19,7 +19,19 @@
   const rangeText = document.getElementById('quote-range');
   const basisText = document.getElementById('quote-basis');
   const isFormSubmit = window.KKSOLVE_CONFIG?.formProvider === 'formsubmit';
+  const emailFallback = document.getElementById('email-fallback');
+  const emailRequest = document.getElementById('email-request');
+  const emailBody = document.getElementById('email-request-body');
   let submitting = false;
+  function prepareEmail(quote) {
+    const lines = Array.from(new FormData(form))
+      .filter(([name]) => !name.startsWith('_'))
+      .map(([name, value]) => `${name.replaceAll('_', ' ')}: ${value}`);
+    lines.push('', `Estimated range (USD): ${quote.range}`, quote.basis,
+      'Non-binding planning estimate. Final price after review; domain, hosting and subscriptions excluded.');
+    emailBody.value = lines.join('\n');
+    emailRequest.href = `mailto:kavin@kksolve.com?subject=${encodeURIComponent(`KKSolve quote request — ${quote.range}`)}&body=${encodeURIComponent(emailBody.value)}`;
+  }
   function estimate() {
     const fields = form.elements;
     const updates = fields.service.value === 'Updates to my website';
@@ -60,9 +72,11 @@
   form.addEventListener('change', () => {
     syncScope();
     if (!resultPanel.hidden) showEstimate();
+    if (!emailFallback.hidden) prepareEmail(estimate());
   });
   form.addEventListener('input', () => {
     if (!submitting) { status.textContent = ''; delete status.dataset.state; }
+    if (!emailFallback.hidden) prepareEmail(estimate());
   });
   syncScope();
   function report(message, state) {
@@ -83,7 +97,10 @@
       return;
     }
     const quote = showEstimate();
+    prepareEmail(quote);
+    emailFallback.hidden = true;
     if (!configured) {
+      emailFallback.hidden = false;
       report('Your estimate is ready. Online delivery is unavailable; please email your details to kavin@kksolve.com.', 'error');
       return;
     }
@@ -118,14 +135,20 @@
         referrerPolicy: 'strict-origin-when-cross-origin'
       });
       const result = await response.json();
+      if (isFormSubmit && typeof result.message === 'string' && /activat|confirm.{0,40}email|verify.{0,40}email/i.test(result.message)) {
+        emailFallback.hidden = false;
+        report('Email delivery is not activated yet. Please use the direct email option below to send your request.', 'error');
+        return;
+      }
       const accepted = isFormSubmit ? result.success === true || result.success === 'true' : result.ok === true;
       if (!response.ok || !accepted) throw new Error('Submission not confirmed');
       report(`Your ${quote.range} estimate and project details were accepted by the email service. Kavin will review your brief and follow up.`, 'success');
       track('inquiry_submitted');
     } catch (error) {
+      emailFallback.hidden = false;
       report(error.name === 'AbortError'
-        ? 'The request timed out, so delivery could not be confirmed. Your details are still here. Please email kavin@kksolve.com or try again.'
-        : 'Delivery could not be confirmed. Your details are still here. Please try again or email kavin@kksolve.com.', 'error');
+        ? 'The email service did not respond in time. Delivery is unconfirmed. Your estimate and details are saved below so you can send them directly by email.'
+        : 'The email service could not confirm delivery. Your estimate and details are saved below so you can send them directly by email.', 'error');
     } finally {
       clearTimeout(timeout);
       submitting = false;
