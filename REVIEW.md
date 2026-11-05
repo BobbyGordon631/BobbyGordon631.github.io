@@ -18,7 +18,7 @@ The root `index.html` and `dist/` use publishable, quote-based wording while `te
 - Support: $10–$20 small requests; $30–$40 larger requests; scope and availability confirmed first; more substantial work separately quoted.
 - Defects: proposed 14-day correction period for defects in delivered, agreed functionality, distinct from new work.
 - Ownership: proposed client-held domain/hosting accounts; custom deliverable transfer after payment and third-party license terms still need a written agreement. The website does not promise unconditional ownership.
-- Form provider: none configured, as requested. Email fallback is the existing `kavin@kksolve.com`; mailbox delivery itself has not been tested.
+- Form provider: FormSubmit configured for `kavin@kksolve.com`; owner activation and live mailbox verification remain.
 
 Set `termsApproved: true` only after the package scope, prices, payment and support terms have been approved together. If they remain unresolved, leave false; the public build continues to say “Request a quote.” Approval flags record your decision, not an automatic approval.
 
@@ -32,16 +32,19 @@ Set `termsApproved: true` only after the package scope, prices, payment and supp
 - `assets/social.png`: social sharing graphic drawn from site typography and colors; `assets/favicon.svg`: editable wordmark icon.
 - Rebuild with `python3 scripts/build.py` after any edit. No JavaScript build dependencies are needed. Preview and distribution directories are generated and ignored by Git.
 
-## Form setup (later)
+## Quote estimates and FormSubmit email
 
-1. Choose and activate a form service with an HTTPS, cross-origin browser POST endpoint, provider-side spam filtering and rate limits, and verified delivery to your existing email. One option is [Formspree](https://help.formspree.io/articles/building-your-form/submit-forms-with-javascript-ajax/); check its current account setup, response contract, data handling, and pricing, and adapt the submission handler if needed. No account or tracking service has been activated.
-2. Put only the public submission URL in `formEndpoint`. Never put an API secret in these files. Configure allowed origin `https://kksolve.com`, and localhost for testing if the provider supports it.
-3. The client submits `multipart/form-data` fields `name`, `email`, `business`, `website`, `service`, `budget`, `timeline`, `description`, and the `_gotcha` honeypot. Your provider must validate name/email/business/description on its server, enforce length limits, and reject spam. Client validation alone is not a security boundary.
-4. Success requires an HTTP successful response with JSON `{"ok": true}` after provider acceptance. If the selected provider uses another contract, adapt `script.js`; never treat an arbitrary response or redirect as confirmed acceptance. Provider acceptance does not guarantee inbox delivery.
-5. Review provider privacy/retention terms and update the short form notice in the template and script to identify the actual provider before activating it. Configure server-side spam protection; add a challenge only if needed, with its secret kept at the provider.
-6. Rebuild, test with the provider’s test mode, then conduct an explicitly authorized end-to-end delivery test. No real inquiries were submitted during this implementation.
+The quote button now shows a non-binding USD range and submits all visitor fields, the range, numeric bounds, assumptions, and exclusions to `kavin@kksolve.com` using FormSubmit. Configuration lives in `site-config.json`; rebuild after changes. The new estimate ranges are planning allowances based on the existing package and update prices, independent of the package/payment-term approval flag. Budget and free-text descriptions do not automatically alter prices; the owner reviews the brief and timeline.
 
-Until configuration is complete, the send button stays disabled and the form explicitly directs visitors to the verified email. JavaScript failure also leaves submission disabled, avoiding accidental navigation or disclosure of inquiry data.
+- New sites/redesigns: 1–4 pages $600–$1,200; 5–8 $1,200–$2,400; 9–12 $1,200–$3,000; 13+ $2,400–$6,000. Unknown page count assumes 1–4 pages.
+- Additions: booking embed $150–$300; editing $150–$400; writing $400–$1,000; custom features $600–$2,400. Large/custom work may exceed the allowance.
+- Updates: small $10–$20; section refresh $30–$40; substantial changes $150–$600, subject to review.
+
+**Activation required:** after publishing, submit a test request and click FormSubmit’s activation link sent to `kavin@kksolve.com` (check spam). Submit another request and verify the received details and estimate. The code is connected, but real mailbox delivery has not been verified. FormSubmit may require activation per form origin, so test the published domain. See https://formsubmit.co/help and https://formsubmit.co/ajax-documentation.
+
+Requests use the AJAX endpoint, provider honeypot, and a referrer limited to the origin. There are no secret keys in the frontend. Success requires an HTTP success and an explicit `success: true` or `success: "true"` response; it indicates provider acceptance, not verified inbox delivery. Errors preserve the estimate and input for retry. The configured provider handles email delivery and spam controls; client validation is not server-side enforcement. JavaScript-disabled browsers retain an email fallback.
+
+`python scripts/verify.py` tests responsive layouts, validation, estimate scenarios, email payload, provider rejection and network failure using intercepted requests. No real email is sent by those checks.
 
 ## Analytics (optional, requires approval)
 

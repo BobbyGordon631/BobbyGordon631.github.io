@@ -1,14 +1,88 @@
 {
   "siteApproved": true,
   "termsApproved": false,
-  "formEndpoint": "",
+  "formEndpoint": "https://formsubmit.co/ajax/kavin@kksolve.com",
   "packages": [
-    {"name":"Standard","price":600,"description":"A clear, welcoming home for your business online.","features":["Up to 4 core pages","Responsive design for phones, tablets & desktops","Setup of your supplied text and images","One straightforward inquiry form","Basic on-page SEO setup","Two consolidated revision rounds","Launch assistance"]},
-    {"name":"Premier","price":1200,"description":"More room to tell your story and connect your services.","features":["Up to 8 core pages with more extensive layouts","Responsive design for phones, tablets & desktops","Content organization & light editing of your copy","One straightforward inquiry form","One standard booking or registration embed/link¹","Basic on-page SEO setup","Three consolidated revision rounds","Launch assistance & a handoff walkthrough"]}
+    {
+      "name": "Standard",
+      "price": 600,
+      "description": "A clear, welcoming home for your business online.",
+      "features": [
+        "Up to 4 core pages",
+        "Responsive design for phones, tablets & desktops",
+        "Setup of your supplied text and images",
+        "One straightforward inquiry form",
+        "Basic on-page SEO setup",
+        "Two consolidated revision rounds",
+        "Launch assistance"
+      ]
+    },
+    {
+      "name": "Premier",
+      "price": 1200,
+      "description": "More room to tell your story and connect your services.",
+      "features": [
+        "Up to 8 core pages with more extensive layouts",
+        "Responsive design for phones, tablets & desktops",
+        "Content organization & light editing of your copy",
+        "One straightforward inquiry form",
+        "One standard booking or registration embed/link\u00b9",
+        "Basic on-page SEO setup",
+        "Three consolidated revision rounds",
+        "Launch assistance & a handoff walkthrough"
+      ]
+    }
   ],
   "standardPayment": "50% upfront and 50% before launch.",
   "largerPayment": "For larger projects: 40% upfront, 30% at design approval, and 30% before launch.",
-  "smallUpdatePrice": "$10–$20",
-  "largerUpdatePrice": "$30–$40",
-  "defectDays": 14
+  "smallUpdatePrice": "$10\u2013$20",
+  "largerUpdatePrice": "$30\u2013$40",
+  "defectDays": 14,
+  "formProvider": "formsubmit",
+  "estimatePricing": {
+    "standard": [
+      600,
+      1200
+    ],
+    "premier": [
+      1200,
+      2400
+    ],
+    "extended": [
+      1200,
+      3000
+    ],
+    "large": [
+      2400,
+      6000
+    ],
+    "booking": [
+      150,
+      300
+    ],
+    "editing": [
+      150,
+      400
+    ],
+    "writing": [
+      400,
+      1000
+    ],
+    "custom": [
+      600,
+      2400
+    ],
+    "smallUpdate": [
+      10,
+      20
+    ],
+    "sectionUpdate": [
+      30,
+      40
+    ],
+    "customUpdate": [
+      150,
+      600
+    ]
+  }
 }

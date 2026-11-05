@@ -32,8 +32,8 @@ with sync_playwright() as p:
         assert page.url.endswith('#services')
         page.locator('a[href="#contact"]').first.click()
         assert page.url.endswith('#contact')
-        assert page.locator('.submit-button').is_disabled()
-        assert 'not connected' in page.locator('#delivery-notice').inner_text()
+        assert page.locator('.submit-button').is_enabled()
+        assert 'FormSubmit' in page.locator('#delivery-notice').inner_text()
         page.screenshot(path=str(ROOT / '.preview' / f'check-{width}.png'), full_page=True)
         print(f'PASS responsive layout, navigation, anchors, images: {width}px')
     # Keyboard access to first link and native FAQ disclosure.
@@ -66,11 +66,11 @@ with sync_playwright() as p:
     print('PASS no console errors during ordinary browsing')
     errors.clear()
     # Inject only a local mock endpoint; no provider is contacted.
-    page.route('**/runtime-config.js', lambda route: route.fulfill(content_type='application/javascript', body='window.KKSOLVE_CONFIG = {formEndpoint: "' + MOCK + '"};'))
+    page.route('**/runtime-config.js', lambda route: route.fulfill(content_type='application/javascript', body='window.KKSOLVE_CONFIG = ' + json.dumps({**json.loads((ROOT / 'site-config.json').read_text()), 'formEndpoint': MOCK}) + ';'))
     requests = []
-    reply = {'status': 200, 'json': {'ok': True}}
+    reply = {'status': 200, 'json': {'success': 'true'}}
     def submit(route):
-        requests.append(True)
+        requests.append(route.request.post_data)
         if reply.get('abort'):
             route.abort('failed')
         else:
@@ -103,20 +103,45 @@ with sync_playwright() as p:
     assert not requests
     page.locator('#company-url').fill('', force=True)
     print('PASS required fields, email/URL validation, whitespace and honeypot')
-    for response in [{'status': 422, 'json': {'ok': False}}, {'status': 200, 'json': {'ok': False}}, {'status': 200, 'json': {}}]:
+    for response in [{'status': 422, 'json': {'success': 'false'}}, {'status': 200, 'json': {'success': 'false'}}, {'status': 200, 'json': {}}]:
         reply.update(response)
         button.click()
         page.wait_for_function("document.querySelector('#form-status').dataset.state === 'error'")
         assert page.locator('#name').input_value() == 'Test Person'
         assert not events
     print('PASS server rejection and unconfirmed responses preserve input, never report success')
-    reply.update({'status': 200, 'json': {'ok': True}})
+    reply.update({'status': 200, 'json': {'success': 'true'}})
     button.click()
     page.wait_for_function("document.querySelector('#form-status').dataset.state === 'success'")
-    assert page.locator('#name').input_value() == ''
+    assert page.locator('#name').input_value() == 'Test Person'
+    assert page.locator('#quote-range').inner_text() == '$600–$1,200'
+    assert 'estimate_range_USD' in requests[-1] and '$600–$1,200' in requests[-1]
+    for name in ['name', 'email', 'business', 'website', 'service', 'budget', 'pages', 'features', 'content', 'timeline', 'description', 'estimate_assumptions']:
+        assert 'name="' + name + '"' in requests[-1], name
     assert events == [{'event': 'inquiry_submitted'}]
-    print('PASS confirmed success resets form and emits only non-personal event name')
-    unexpected = [error for error in errors if '422 (Unprocessable Entity)' not in error]
+    print('PASS confirmed success preserves estimate and includes full payload and emits only non-personal event name')
+    page.locator('#pages').select_option('5-8')
+    page.locator('#features').select_option('booking')
+    page.locator('#content').select_option('editing')
+    assert page.locator('#quote-range').inner_text() == '$1,500–$3,100'
+    page.locator('#service').select_option(label='Updates to my website')
+    assert page.locator('#quote-range').inner_text() == '$10–$20'
+    page.locator('#update-scope').select_option('section')
+    assert page.locator('#quote-range').inner_text() == '$30–$40'
+    button.click()
+    page.wait_for_function("document.querySelector('#form-status').dataset.state === 'success'")
+    assert 'name="update_scope"' in requests[-1]
+    assert 'name="pages"' not in requests[-1]
+    page.locator('#service').select_option(label='A new website')
+    page.locator('#features').select_option('custom')
+    assert 'may exceed' in page.locator('#quote-basis').inner_text()
+    reply['abort'] = True
+    button.click()
+    page.wait_for_function("document.querySelector('#form-status').dataset.state === 'error'")
+    assert page.locator('#quote-result').is_visible()
+    assert page.locator('#description').input_value()
+    print('PASS scope changes, update pricing, custom allowances, network failure and estimate persistence')
+    unexpected = [error for error in errors if '422 (Unprocessable Entity)' not in error and 'net::ERR_FAILED' not in error]
     assert not unexpected, unexpected
     browser.close()
 print('PASS no unexpected browser console errors; no real inquiry submitted')

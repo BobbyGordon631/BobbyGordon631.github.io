@@ -1046,3 +1046,18 @@ h2 {
 @media (max-width: 760px) {
   input, select, textarea { font-size: 16px; }
 }
+
+.quote-result {
+  padding:20px;
+  margin-bottom:20px;
+  background:#f2f5eb;
+  border:1px solid var(--line);
+  border-radius:4px;
+}
+.quote-result .quote-range {
+  font-size:clamp(24px, 5vw, 34px);
+  font-weight:600;
+  color:var(--green);
+  margin:10px 0;
+}
+.quote-result p { font-size:12px; margin-top:10px; }
