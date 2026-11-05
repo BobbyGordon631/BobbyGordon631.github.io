@@ -33,7 +33,7 @@ with sync_playwright() as p:
         page.locator('a[href="#contact"]').first.click()
         assert page.url.endswith('#contact')
         assert page.locator('.submit-button').is_enabled()
-        assert 'FormSubmit' in page.locator('#delivery-notice').inner_text()
+        assert 'Web3Forms' in page.locator('#delivery-notice').inner_text()
         page.screenshot(path=str(ROOT / '.preview' / f'check-{width}.png'), full_page=True)
         print(f'PASS responsive layout, navigation, anchors, images: {width}px')
     # Keyboard access to first link and native FAQ disclosure.
@@ -68,7 +68,7 @@ with sync_playwright() as p:
     # Inject only a local mock endpoint; no provider is contacted.
     page.route('**/runtime-config.js*', lambda route: route.fulfill(content_type='application/javascript', body='window.KKSOLVE_CONFIG = ' + json.dumps({**json.loads((ROOT / 'site-config.json').read_text()), 'formEndpoint': MOCK}) + ';'))
     requests = []
-    reply = {'status': 200, 'json': {'success': 'true'}}
+    reply = {'status': 200, 'json': {'success': True}}
     def submit(route):
         requests.append(route.request.post_data)
         if reply.get('abort'):
@@ -103,14 +103,14 @@ with sync_playwright() as p:
     assert not requests
     page.locator('#company-url').fill('', force=True)
     print('PASS required fields, email/URL validation, whitespace and honeypot')
-    for response in [{'status': 422, 'json': {'success': 'false'}}, {'status': 200, 'json': {'success': 'false'}}, {'status': 200, 'json': {}}]:
+    for response in [{'status': 422, 'json': {'success': False}}, {'status': 200, 'json': {'success': False}}, {'status': 200, 'json': {}}]:
         reply.update(response)
         button.click()
         page.wait_for_function("document.querySelector('#form-status').dataset.state === 'error'")
         assert page.locator('#name').input_value() == 'Test Person'
         assert not events
     print('PASS server rejection and unconfirmed responses preserve input, never report success')
-    reply.update({'status': 200, 'json': {'success': 'true'}})
+    reply.update({'status': 200, 'json': {'success': True}})
     button.click()
     page.wait_for_function("document.querySelector('#form-status').dataset.state === 'success'")
     assert page.locator('#name').input_value() == 'Test Person'

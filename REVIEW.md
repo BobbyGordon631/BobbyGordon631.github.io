@@ -18,7 +18,7 @@ The root `index.html` and `dist/` use publishable, quote-based wording while `te
 - Support: $10–$20 small requests; $30–$40 larger requests; scope and availability confirmed first; more substantial work separately quoted.
 - Defects: proposed 14-day correction period for defects in delivered, agreed functionality, distinct from new work.
 - Ownership: proposed client-held domain/hosting accounts; custom deliverable transfer after payment and third-party license terms still need a written agreement. The website does not promise unconditional ownership.
-- Form provider: FormSubmit configured for `kavin@kksolve.com`; owner activation and live mailbox verification remain.
+- Form provider: Web3Forms configured with the public access key supplied for `kavin@kksolve.com`; live mailbox verification remains.
 
 Set `termsApproved: true` only after the package scope, prices, payment and support terms have been approved together. If they remain unresolved, leave false; the public build continues to say “Request a quote.” Approval flags record your decision, not an automatic approval.
 
@@ -32,17 +32,20 @@ Set `termsApproved: true` only after the package scope, prices, payment and supp
 - `assets/social.png`: social sharing graphic drawn from site typography and colors; `assets/favicon.svg`: editable wordmark icon.
 - Rebuild with `python3 scripts/build.py` after any edit. No JavaScript build dependencies are needed. Preview and distribution directories are generated and ignored by Git.
 
-## Quote estimates and FormSubmit email
+## Quote estimates and Web3Forms email
 
-The quote button now shows a non-binding USD range and submits all visitor fields, the range, numeric bounds, assumptions, and exclusions to `kavin@kksolve.com` using FormSubmit. Configuration lives in `site-config.json`; rebuild after changes. The new estimate ranges are planning allowances based on the existing package and update prices, independent of the package/payment-term approval flag. Budget and free-text descriptions do not automatically alter prices; the owner reviews the brief and timeline.
+The quote button now shows a non-binding USD range and submits all visitor fields, the range, numeric bounds, assumptions, and exclusions to `kavin@kksolve.com` using Web3Forms. Configuration lives in `site-config.json`; rebuild after changes. The new estimate ranges are planning allowances based on the existing package and update prices, independent of the package/payment-term approval flag. Budget and free-text descriptions do not automatically alter prices; the owner reviews the brief and timeline.
 
 - New sites/redesigns: 1–4 pages $600–$1,200; 5–8 $1,200–$2,400; 9–12 $1,200–$3,000; 13+ $2,400–$6,000. Unknown page count assumes 1–4 pages.
 - Additions: booking embed $150–$300; editing $150–$400; writing $400–$1,000; custom features $600–$2,400. Large/custom work may exceed the allowance.
 - Updates: small $10–$20; section refresh $30–$40; substantial changes $150–$600, subject to review.
 
-**Activation required:** after publishing, submit a test request and click FormSubmit’s activation link sent to `kavin@kksolve.com` (check spam). Submit another request and verify the received details and estimate. The code is connected, but real mailbox delivery has not been verified. FormSubmit may require activation per form origin, so test the published domain. See https://formsubmit.co/help and https://formsubmit.co/ajax-documentation.
+**Web3Forms setup:** `site-config.json` contains the public `formAccessKey`, provider name, and `https://api.web3forms.com/submit` endpoint. The build includes the public key in `runtime-config.js`; it is intended for browser-side use. The recipient is determined by the Web3Forms account associated with the key. See https://docs.web3forms.com/getting-started/api-reference.
 
-Requests use the AJAX endpoint, provider honeypot, and a referrer limited to the origin. There are no secret keys in the frontend. Success requires an HTTP success and an explicit `success: true` or `success: "true"` response; it indicates provider acceptance, not verified inbox delivery. Errors preserve the estimate and input for retry. The configured provider handles email delivery and spam controls; client validation is not server-side enforcement. JavaScript-disabled browsers retain an email fallback.
+Requests include `access_key`, `subject`, `from_name`, `email` (reply-to), the provider's `botcheck` honeypot, and all active project/estimate fields. Success requires an HTTP success and boolean `success: true`; it indicates provider acceptance, not verified inbox delivery. Errors preserve the estimate and input and offer a prefilled direct email plus a copyable full request. JavaScript-disabled browsers retain an email fallback.
+
+Run `node --test tests/form-delivery.cjs` for offline delivery regression tests. No live inquiry is sent by these tests. After deployment, submit a request from the live site and confirm that the email arrives with the complete brief and estimate. Web3Forms replaces the unavailable FormSubmit service; the former provider's activation flow no longer applies.
+
 
 `python scripts/verify.py` tests responsive layouts, validation, estimate scenarios, email payload, provider rejection and network failure using intercepted requests. No real email is sent by those checks.
 

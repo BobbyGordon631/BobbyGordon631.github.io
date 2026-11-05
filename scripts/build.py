@@ -12,7 +12,7 @@ TEMPLATE = (ROOT / 'templates/index.html').read_text()
 
 
 def runtime_config():
-    return 'window.KKSOLVE_CONFIG = ' + json.dumps({key: CONFIG.get(key) for key in ['formEndpoint', 'formProvider', 'estimatePricing']}) + ';\n'
+    return 'window.KKSOLVE_CONFIG = ' + json.dumps({key: CONFIG.get(key) for key in ['formEndpoint', 'formProvider', 'formAccessKey', 'estimatePricing']}) + ';\n'
 
 
 def asset_version(content):
@@ -67,7 +67,7 @@ def render(review=False):
         'PACKAGES': packages, 'PAYMENT': payment, 'SUPPORT': support,
         'COST_FAQ': cost, 'DEFECT_FAQ': defect,
         'FORM_ACTION': esc(endpoint) if endpoint else '#contact',
-        'DELIVERY_NOTICE': 'Your project details and estimated range will be sent to Kavin via FormSubmit.' if endpoint and CONFIG.get('formProvider') == 'formsubmit' else 'Your project details and estimated range will be sent to Kavin through the configured form provider.' if endpoint else 'Online form delivery is not connected yet. Please email <a href="mailto:kavin@kksolve.com">kavin@kksolve.com</a> to request your quote. Nothing entered here is sent.'
+        'DELIVERY_NOTICE': 'Your project details and estimated range will be sent to Kavin via Web3Forms.' if endpoint and CONFIG.get('formProvider') == 'web3forms' else 'Your project details and estimated range will be sent to Kavin through the configured form provider.' if endpoint else 'Online form delivery is not connected yet. Please email <a href="mailto:kavin@kksolve.com">kavin@kksolve.com</a> to request your quote. Nothing entered here is sent.'
     }
     result = TEMPLATE
     for key, value in values.items():

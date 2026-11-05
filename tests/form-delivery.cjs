@@ -8,7 +8,7 @@ const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
 const config = JSON.parse(fs.readFileSync(path.join(root, 'site-config.json')));
 
-function setup(fetch) {
+function setup(fetch, overrides = {}) {
   function element(value = '') {
     return { value, hidden: false, dataset: {}, handlers: {}, selectedOptions: [{ textContent: value }],
       addEventListener(name, handler) { this.handlers[name] = handler; },
@@ -33,7 +33,7 @@ function setup(fetch) {
   const events = [];
   const timers = new Map();
   vm.runInNewContext(source, {
-    window: { KKSOLVE_CONFIG: config, dispatchEvent: event => events.push(event) },
+    window: { KKSOLVE_CONFIG: { ...config, ...overrides }, dispatchEvent: event => events.push(event) },
     document: { getElementById: id => ids[id], querySelectorAll: () => [] },
     FormData: class extends Map {
       constructor() { super(Object.entries(fields).filter(([, field]) => !field.disabled).map(([key, field]) => [key, field.value])); }
@@ -69,7 +69,7 @@ test('timeout restores controls and offers the complete encoded email without re
 });
 
 for (const [name, response] of [
-  ['activation required', { ok: true, json: async () => ({ success: 'true', message: 'Please activate your form' }) }],
+  ['missing success confirmation', { ok: true, json: async () => ({ message: 'Request received' }) }],
   ['provider rejection', { ok: false, json: async () => ({ success: false }) }],
   ['non-JSON gateway error', { ok: false, json: async () => { throw new SyntaxError('HTML response'); } }]
 ]) test(name + ' preserves the request and offers direct email', async () => {
@@ -84,12 +84,35 @@ for (const [name, response] of [
 test('confirmed acceptance reports success and does not offer a duplicate submission', async () => {
   const app = setup(async (url, options) => {
     assert.equal(options.body.get('estimate_range_USD'), '$600–$1,200');
-    assert.equal(options.body.get('_honey'), '');
-    return { ok: true, json: async () => ({ success: 'true' }) };
+    assert.equal(url, 'https://api.web3forms.com/submit');
+    assert.equal(options.body.get('access_key'), config.formAccessKey);
+    assert.equal(options.body.get('subject'), 'KKSolve quote request — $600–$1,200');
+    assert.equal(options.body.get('email'), 'test@example.invalid');
+    assert.equal(options.body.get('botcheck'), '');
+    assert.equal(options.body.has('_gotcha'), false);
+    return { ok: true, json: async () => ({ success: true }) };
   });
   await app.submit();
   assert.equal(app.ids['form-status'].dataset.state, 'success');
   assert.equal(app.ids['email-fallback'].hidden, true);
   assert.equal(app.events.length, 1);
   assert.equal(app.button.disabled, false);
+});
+
+
+test('missing access key offers email without contacting the provider', async () => {
+  const app = setup(() => { throw new Error('Must not send'); }, { formAccessKey: '' });
+  await app.submit();
+  assert.equal(app.ids['form-status'].dataset.state, 'error');
+  assert.equal(app.ids['email-fallback'].hidden, false);
+  assert.equal(app.events.length, 0);
+});
+
+test('honeypot blocks submission before contacting Web3Forms', async () => {
+  let requests = 0;
+  const app = setup(() => { requests++; });
+  app.fields._gotcha.value = 'spam';
+  await app.submit();
+  assert.equal(requests, 0);
+  assert.equal(app.ids['form-status'].dataset.state, 'error');
 });

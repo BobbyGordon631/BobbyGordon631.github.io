@@ -1,7 +1,7 @@
 {
   "siteApproved": true,
   "termsApproved": false,
-  "formEndpoint": "https://formsubmit.co/ajax/kavin@kksolve.com",
+  "formEndpoint": "https://api.web3forms.com/submit",
   "packages": [
     {
       "name": "Standard",
@@ -38,7 +38,8 @@
   "smallUpdatePrice": "$10\u2013$20",
   "largerUpdatePrice": "$30\u2013$40",
   "defectDays": 14,
-  "formProvider": "formsubmit",
+  "formProvider": "web3forms",
+  "formAccessKey": "ad959f2c-d2f3-406c-9a87-c896b6bccb1b",
   "estimatePricing": {
     "standard": [
       600,

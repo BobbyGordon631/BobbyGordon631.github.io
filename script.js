@@ -13,12 +13,12 @@
   const status = document.getElementById('form-status');
   const notice = document.getElementById('delivery-notice');
   const endpoint = window.KKSOLVE_CONFIG?.formEndpoint || '';
-  const configured = /^https:\/\//.test(endpoint);
+  const accessKey = window.KKSOLVE_CONFIG?.formAccessKey || '';
+  const configured = /^https:\/\//.test(endpoint) && Boolean(accessKey);
   const pricing = window.KKSOLVE_CONFIG?.estimatePricing;
   const resultPanel = document.getElementById('quote-result');
   const rangeText = document.getElementById('quote-range');
   const basisText = document.getElementById('quote-basis');
-  const isFormSubmit = window.KKSOLVE_CONFIG?.formProvider === 'formsubmit';
   const emailFallback = document.getElementById('email-fallback');
   const emailRequest = document.getElementById('email-request');
   const emailBody = document.getElementById('email-request-body');
@@ -110,13 +110,11 @@
     payload.set('estimate_max_USD', String(quote.high));
     payload.set('estimate_assumptions', quote.basis);
     payload.set('estimate_terms', 'Non-binding planning estimate. Final price after review; domain, hosting and subscriptions excluded.');
-    payload.set('_subject', `KKSolve quote request — ${quote.range}`);
-    if (isFormSubmit) {
-      payload.set('_honey', payload.get('_gotcha') || '');
-      payload.delete('_gotcha');
-      payload.set('_template', 'table');
-      payload.set('_url', 'https://kksolve.com/');
-    }
+    payload.set('access_key', accessKey);
+    payload.set('subject', `KKSolve quote request — ${quote.range}`);
+    payload.set('from_name', 'KKSolve website');
+    payload.set('botcheck', payload.get('_gotcha') || '');
+    payload.delete('_gotcha');
     submitting = true;
     button.disabled = true;
     button.textContent = 'Sending your request…';
@@ -135,12 +133,7 @@
         referrerPolicy: 'strict-origin-when-cross-origin'
       });
       const result = await response.json();
-      if (isFormSubmit && typeof result.message === 'string' && /activat|confirm.{0,40}email|verify.{0,40}email/i.test(result.message)) {
-        emailFallback.hidden = false;
-        report('Email delivery is not activated yet. Please use the direct email option below to send your request.', 'error');
-        return;
-      }
-      const accepted = isFormSubmit ? result.success === true || result.success === 'true' : result.ok === true;
+      const accepted = result.success === true;
       if (!response.ok || !accepted) throw new Error('Submission not confirmed');
       report(`Your ${quote.range} estimate and project details were accepted by the email service. Kavin will review your brief and follow up.`, 'success');
       track('inquiry_submitted');
@@ -166,6 +159,6 @@
   });
   button.disabled = !pricing;
   if (configured) {
-    notice.textContent = isFormSubmit ? 'Your project details and estimated range will be sent to Kavin via FormSubmit.' : 'Your project details and estimated range will be sent to Kavin through the configured form provider.';
+    notice.textContent = 'Your project details and estimated range will be sent to Kavin via Web3Forms.';
   }
 })();
