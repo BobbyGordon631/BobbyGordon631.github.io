@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="style.css">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","name":"KKSolve","url":"https://kksolve.com/","email":"kavin@kksolve.com","founder":{"@type":"Person","name":"Kavin Karunagaran"},"areaServed":["Livermore","Tri-Valley","East Bay"],"description":"Independent website design and development for local businesses and organizations."}</script>
   <script src="runtime-config.js?v=58b129fcd98c" defer></script>
-  <script src="script.js?v=f12593045e9e" defer></script>
+  <script src="script.js?v=279621985fb6" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -98,6 +98,11 @@
         <section id="quote-result" class="quote-result" aria-live="polite" hidden><h3>Your estimated range</h3><p id="quote-range" class="quote-range"></p><p id="quote-basis"></p><p>Planning estimate in USD, subject to reviewing your brief. Domain, hosting and third-party subscriptions are extra. Final scope, price and availability are confirmed before work begins.</p></section>
         <button class="button submit-button" type="submit" disabled>Get My Estimate &amp; Send Request <span aria-hidden="true">↗</span></button>
         <p id="form-status" role="status" aria-live="polite" tabindex="-1"></p>
+        <div id="email-fallback" hidden>
+          <p>Send your request directly to <a id="email-request" href="mailto:kavin@kksolve.com">kavin@kksolve.com using your email app</a>. Review the prepared email and press Send there.</p>
+          <p>If your email app does not open or leaves anything out, copy the full request below into an email. Delivery from the form is unconfirmed; sending again could create a duplicate.</p>
+          <div class="field"><label for="email-request-body">Your full request — select and copy</label><textarea id="email-request-body" rows="8" readonly></textarea></div>
+        </div>
       </form>
     </section>
   </main>
