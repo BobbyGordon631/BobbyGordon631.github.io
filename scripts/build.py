@@ -56,7 +56,7 @@ def render(review=False):
         'PACKAGES': packages, 'PAYMENT': payment, 'SUPPORT': support,
         'COST_FAQ': cost, 'DEFECT_FAQ': defect,
         'FORM_ACTION': esc(endpoint) if endpoint else '#contact',
-        'DELIVERY_NOTICE': 'Your details will be sent to Kavin through the configured form provider to discuss your project.' if endpoint else 'Online form delivery is not connected yet. Please email <a href="mailto:kavin@kksolve.com">kavin@kksolve.com</a> to request your quote. Nothing entered here is sent.'
+        'DELIVERY_NOTICE': 'Your project details and estimated range will be sent to Kavin via FormSubmit.' if endpoint and CONFIG.get('formProvider') == 'formsubmit' else 'Your project details and estimated range will be sent to Kavin through the configured form provider.' if endpoint else 'Online form delivery is not connected yet. Please email <a href="mailto:kavin@kksolve.com">kavin@kksolve.com</a> to request your quote. Nothing entered here is sent.'
     }
     result = TEMPLATE
     for key, value in values.items():
@@ -72,7 +72,7 @@ def build_folder(folder, review):
     for filename in ['style.css', 'script.js', 'tinos.html']:
         shutil.copy2(ROOT / filename, folder / filename)
     shutil.copytree(ROOT / 'assets', folder / 'assets', dirs_exist_ok=True)
-    runtime = 'window.KKSOLVE_CONFIG = ' + json.dumps({'formEndpoint': CONFIG.get('formEndpoint', '')}) + ';\n'
+    runtime = 'window.KKSOLVE_CONFIG = ' + json.dumps({key: CONFIG.get(key) for key in ['formEndpoint', 'formProvider', 'estimatePricing']}) + ';\n'
     (folder / 'runtime-config.js').write_text(runtime)
     (folder / 'robots.txt').write_text('User-agent: *\nDisallow: /\n' if review else 'User-agent: *\nAllow: /\nSitemap: https://kksolve.com/sitemap.xml\n')
     if not review:
